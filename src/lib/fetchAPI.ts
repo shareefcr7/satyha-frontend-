@@ -1,9 +1,10 @@
 /**
  * Fetch API Wrapper
  * Handles CORS issues locally by using localhost, on Vercel uses proper backend URL
+ * AGGRESSIVE CACHE BUSTING - Always fetch fresh data
  */
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://clear-glass-backend-.vercel.app/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://clear-glass-backend.vercel.app/api';
 
 interface FetchOptions extends RequestInit {
   timeout?: number;
@@ -18,9 +19,12 @@ export async function fetchAPI(
   // Detect if running locally - MUST be done at runtime in browser, not at module load
   const isLocalhost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
 
-  // Ensure proper headers
+  // AGGRESSIVE CACHE BUSTING HEADERS
   const headers = {
     'Content-Type': 'application/json',
+    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+    'Pragma': 'no-cache',
+    'Expires': '0',
     ...fetchOptions.headers,
   };
 
@@ -39,9 +43,11 @@ export async function fetchAPI(
     }
   }
 
-  // Add timestamp for cache-busting
+  // Add timestamp for cache-busting (multiple timestamps to be extra sure)
+  const timestamp = Date.now();
+  const random = Math.random().toString(36).substr(2, 9);
   const separator = url.includes('?') ? '&' : '?';
-  const urlWithTimestamp = `${url}${separator}_t=${Date.now()}`;
+  const urlWithTimestamp = `${url}${separator}_t=${timestamp}&_r=${random}&nocache=${Date.now()}`;
 
   // Prepare fetch options
   const finalOptions: RequestInit = {

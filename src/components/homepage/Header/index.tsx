@@ -20,44 +20,8 @@ type BannerSlide = {
   ctaSecondary?: string;
 };
 
-// Fallback banners in case API is not available
-const fallbackSlides: BannerSlide[] = [
-  {
-    _id: "1",
-    desktopImage: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=1600&q=90",
-    mobileImage: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=800&q=90",
-    tag: "Luxury Abayas",
-    headline: "Elegance\nRedefined",
-    subheadline: "Discover our exclusive collection of premium abayas, designed for the modern woman.",
-    cta: "Shop Collection",
-    ctaSecondary: "Explore Lookbook",
-    align: "left",
-    isActive: true,
-  },
-  {
-    _id: "2",
-    desktopImage: "https://images.unsplash.com/photo-1594035910387-fea47794261f?w=1600&q=90",
-    mobileImage: "https://images.unsplash.com/photo-1594035910387-fea47794261f?w=800&q=90",
-    tag: "Signature Scents",
-    headline: "Luxury\nPerfumes",
-    subheadline: "Captivating fragrances crafted from the finest ingredients to leave a lasting impression.",
-    cta: "View All",
-    ctaSecondary: "Find Your Scent",
-    align: "center",
-    isActive: true,
-  },
-  {
-    _id: "3",
-    desktopImage: "https://images.unsplash.com/photo-1584916201218-f4242ceb4809?w=1600&q=90",
-    mobileImage: "https://images.unsplash.com/photo-1584916201218-f4242ceb4809?w=800&q=90",
-    tag: "Exclusive Accessories",
-    headline: "Timeless\nDetails",
-    subheadline: "Elevate your style with our handcrafted premium bags and accessories.",
-    cta: "Shop Accessories",
-    align: "right",
-    isActive: true,
-  },
-];
+// NO FALLBACK IMAGES - Only show real admin data
+const fallbackSlides: BannerSlide[] = [];
 
 export default function HeroBanner() {
   const [current, setCurrent] = useState(0);
@@ -92,31 +56,40 @@ export default function HeroBanner() {
   }, []);
 
   useEffect(() => {
-    if (!api) {
-      setSlides(fallbackSlides);
-      return;
-    }
-
     const fetchBanners = async () => {
       try {
-        // Use fetchAPI wrapper to handle CORS
-        const data = await fetchAPIJson<{ banners: BannerSlide[] }>('/banner');
+        // Force fresh data from API - no cache at all
+        const data = await fetchAPIJson<{ banners: BannerSlide[] }>('/banner', {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-store, no-cache, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+          }
+        });
 
-        if (data.banners && Array.isArray(data.banners)) {
+        console.log("HeroBanner: Fetched banners:", data);
+
+        if (data && data.banners && Array.isArray(data.banners)) {
           const activeBanners = data.banners.filter((b: BannerSlide) => b.isActive);
+          console.log("HeroBanner: Active banners:", activeBanners);
+          
           if (activeBanners.length > 0) {
             setSlides(activeBanners);
             return;
           }
         }
+        
+        console.error("HeroBanner: No active banners found in API response");
+        setSlides([]);
       } catch (err) {
-        console.error("HeroBanner: Failed to fetch banners from API.", err);
+        console.error("HeroBanner: Failed to fetch banners from API:", err);
+        setSlides([]);
       }
-      setSlides(fallbackSlides);
     };
 
     fetchBanners();
-  }, []);
+  }, [api]);
 
   const next = useCallback(() => {
     if (slides.length > 0) {
@@ -136,8 +109,9 @@ export default function HeroBanner() {
     return () => clearInterval(id);
   }, [next, paused]);
 
-  // Fallback will ensure slides is never empty
+  // Show nothing if no slides - don't show fallback
   if (!slides || slides.length === 0) {
+    console.warn("HeroBanner: No slides available - banner hidden");
     return null;
   }
 
