@@ -1,9 +1,6 @@
 /**
  * Fetch API Wrapper
- * Handles CORS issues by:
- * 1. Using server-side proxies (Next.js API routes)
- * 2. Adding proper headers
- * 3. Implementing error handling
+ * Handles CORS issues and cache-busting
  */
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://clear-glass-backend-.vercel.app/api';
@@ -24,10 +21,15 @@ export async function fetchAPI(
     ...fetchOptions.headers,
   };
 
-  // Build full URL
-  const url = endpoint.startsWith('http') 
-    ? endpoint 
-    : `${API_URL}${endpoint}`;
+  // Build full URL - endpoint should NOT include /api prefix
+  let url: string;
+  if (endpoint.startsWith('http')) {
+    url = endpoint;
+  } else {
+    // Remove leading slash if present, as API_URL already ends with /api
+    const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
+    url = `${API_URL}/${cleanEndpoint}`;
+  }
 
   // Add timestamp for cache-busting
   const separator = url.includes('?') ? '&' : '?';
@@ -57,7 +59,8 @@ export async function fetchAPI(
     ]);
 
     if (!response.ok) {
-      throw new Error(`API error: ${response.status} ${response.statusText}`);
+      console.warn(`API response not ok: ${response.status} ${response.statusText} for ${url}`);
+      // Don't throw on 4xx/5xx, just return the response so caller can handle
     }
 
     return response;
@@ -72,5 +75,8 @@ export async function fetchAPIJson<T>(
   options?: FetchOptions
 ): Promise<T> {
   const response = await fetchAPI(endpoint, options);
+  if (!response.ok) {
+    throw new Error(`API error: ${response.status}`);
+  }
   return response.json();
 }
