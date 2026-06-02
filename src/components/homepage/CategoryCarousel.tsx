@@ -73,7 +73,16 @@ export default function CategoryCarousel() {
   useEffect(() => {
     if (!api) { setLoading(false); return; }
 
-    fetch(`${api}/category/list`)
+    // Add timestamp for cache-busting + disable cache
+    const timestamp = Date.now();
+    fetch(`${api}/category/list?_t=${timestamp}`, {
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }
+    })
   .then(res => {
     if (
       !res.ok ||

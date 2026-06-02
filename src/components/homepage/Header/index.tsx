@@ -58,9 +58,6 @@ const fallbackSlides: BannerSlide[] = [
   },
 ];
 
-// Module-level banner cache — fetched once per session
-let bannerCache: BannerSlide[] | null = null;
-
 export default function HeroBanner() {
   const [current, setCurrent] = useState(0);
   const [prev, setPrev] = useState<number | null>(null);
@@ -99,15 +96,18 @@ export default function HeroBanner() {
       return;
     }
 
-    // Use cached banners if already fetched this session
-    if (bannerCache) {
-      setSlides(bannerCache);
-      return;
-    }
-
     const fetchBanners = async () => {
       try {
-        const res = await fetch(`${api}/banner`);
+        // Add timestamp for cache-busting + disable cache
+        const timestamp = Date.now();
+        const res = await fetch(`${api}/banner?_t=${timestamp}`, {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+          }
+        });
         if (!res.ok || !res.headers.get("content-type")?.includes("application/json")) {
           throw new Error("Invalid response");
         }
@@ -116,7 +116,6 @@ export default function HeroBanner() {
         if (data.banners && Array.isArray(data.banners)) {
           const activeBanners = data.banners.filter((b: BannerSlide) => b.isActive);
           if (activeBanners.length > 0) {
-            bannerCache = activeBanners;
             setSlides(activeBanners);
             return;
           }
@@ -124,7 +123,6 @@ export default function HeroBanner() {
       } catch (err) {
         console.error("HeroBanner: Failed to fetch banners from API.", err);
       }
-      bannerCache = fallbackSlides;
       setSlides(fallbackSlides);
     };
 
