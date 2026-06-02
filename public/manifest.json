@@ -1,0 +1,25 @@
+{
+  "name": "Clear Glass - Premium Car Wash Products",
+  "short_name": "Clear Glass",
+  "description": "Premium car wash products and accessories for every vehicle",
+  "theme_color": "#2D3A8C",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "orientation": "portrait",
+  "scope": "/",
+  "start_url": "/",
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ]
+}

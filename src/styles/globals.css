@@ -1,0 +1,65 @@
+@import "./banner.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 26, 26, 26;
+  --background-start-rgb: 255, 255, 255;
+  --background-end-rgb: 255, 255, 255;
+  /* Brand colors - CG Logo Theme */
+  --brand: #2D3A8C;       /* Deep Navy Blue (logo background) */
+  --brand-dark: #1e2a6e;  /* Darker Navy */
+  --brand-light: #ffffff; /* Pure White — no tint */
+  --brand-accent: #00AEEF; /* Cyan (logo C letter) */
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;          /* pure white */
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    /* primary = Navy Blue #2D3A8C */
+    --primary: 228 52% 36%;
+    --primary-foreground: 0 0% 100%;
+    /* secondary = very light grey-white */
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 228 52% 36%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 222 20% 45%;
+    /* accent = Cyan #00AEEF */
+    --accent: 197 100% 47%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 228 52% 36%;
+    --chart-1: 228 52% 36%;
+    --chart-2: 197 100% 47%;
+    --chart-3: 228 40% 55%;
+    --chart-4: 197 80% 65%;
+    --chart-5: 228 30% 70%;
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-white text-foreground font-montserrat;
+  }
+}
