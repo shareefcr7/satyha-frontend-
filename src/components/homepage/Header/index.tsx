@@ -210,30 +210,13 @@ export default function HeroBanner() {
           width: 100%;
           height: 100%;
           object-fit: cover;
-          object-position: center center;
+          object-position: center;
           background-color: #f5f5f5;
           transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1),
                       transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
           -webkit-user-select: none;
           user-select: none;
           display: block;
-        }
-
-        /* Ensure image fills container without gaps on desktop */
-        @supports (object-fit: cover) {
-          .slide-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            object-position: center 45%;
-          }
-        }
-
-        /* Responsive object-position for better focal point on mobile */
-        @media (max-width: 768px) {
-          .slide-img {
-            object-position: center center;
-          }
         }
 
         /* Fallback for browsers that don't support object-fit */
