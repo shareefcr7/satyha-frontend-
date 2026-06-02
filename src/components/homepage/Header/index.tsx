@@ -81,13 +81,9 @@ export default function HeroBanner() {
     const fetchBanners = async () => {
       try {
         // Force fresh data from API - no cache at all
+        // Don't send cache-control headers to avoid CORS preflight issues
         const data = await fetchAPIJson<{ banners: BannerSlide[] }>('/banner', {
-          cache: 'no-store',
-          headers: {
-            'Cache-Control': 'no-store, no-cache, must-revalidate',
-            'Pragma': 'no-cache',
-            'Expires': '0'
-          }
+          cache: 'no-store'
         });
 
         console.log("HeroBanner: Fetched banners:", data);
