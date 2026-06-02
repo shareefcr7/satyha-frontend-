@@ -1,6 +1,6 @@
 /**
  * Fetch API Wrapper
- * Handles CORS issues and cache-busting
+ * Handles CORS issues locally by using localhost, on Vercel uses proper backend URL
  */
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://clear-glass-backend-.vercel.app/api';
@@ -15,20 +15,28 @@ export async function fetchAPI(
 ): Promise<Response> {
   const { timeout = 10000, ...fetchOptions } = options;
 
+  // Detect if running locally - MUST be done at runtime in browser, not at module load
+  const isLocalhost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
   // Ensure proper headers
   const headers = {
     'Content-Type': 'application/json',
     ...fetchOptions.headers,
   };
 
-  // Build full URL - endpoint should NOT include /api prefix
+  // Build full URL
   let url: string;
   if (endpoint.startsWith('http')) {
     url = endpoint;
   } else {
-    // Remove leading slash if present, as API_URL already ends with /api
     const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
-    url = `${API_URL}/${cleanEndpoint}`;
+    
+    // Use localhost during development, Vercel backend on production
+    if (isLocalhost) {
+      url = `http://localhost:5002/api/${cleanEndpoint}`;
+    } else {
+      url = `${API_URL}/${cleanEndpoint}`;
+    }
   }
 
   // Add timestamp for cache-busting
@@ -60,7 +68,6 @@ export async function fetchAPI(
 
     if (!response.ok) {
       console.warn(`API response not ok: ${response.status} ${response.statusText} for ${url}`);
-      // Don't throw on 4xx/5xx, just return the response so caller can handle
     }
 
     return response;

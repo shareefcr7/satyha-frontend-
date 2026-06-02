@@ -217,20 +217,23 @@ export default function HeroBanner() {
         }
 
         .slide-img.active {
-          opacity: 1;
-          transform: scale(1);
-          z-index: 2;
+          opacity: 1 !important;
+          transform: scale(1) !important;
+          z-index: 2 !important;
+          visibility: visible !important;
         }
 
         .slide-img.exiting {
           opacity: 0;
           transform: scale(1);
           z-index: 1;
+          visibility: hidden;
         }
 
         .slide-img.idle {
           opacity: 0;
           z-index: 0;
+          visibility: hidden;
         }
 
         /* ═══════════════════════════════════════════════════════════════════════ */
@@ -624,7 +627,9 @@ export default function HeroBanner() {
               src={imageSrc}
               alt={s.headline}
               aria-hidden={i !== current}
-              loading={i === 0 ? "eager" : "lazy"}
+              loading="eager"
+              decoding="async"
+              style={{ visibility: i === current ? 'visible' : 'hidden' }}
             />
           );
         })}
