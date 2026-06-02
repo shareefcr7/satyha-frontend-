@@ -124,8 +124,18 @@ const ShopProductsList = () => {
     const fetchAllProducts = async () => {
       setLoading(true);
       try {
+        // Add timestamp to bypass browser/CDN cache
+        const timestamp = Date.now();
         // Fetch up to 500 products to ensure all admin-added products are shown
-        const res = await fetch(`${api}/product?skip=0&limit=500`, { signal: controller.signal });
+        const res = await fetch(`${api}/product?skip=0&limit=500&_t=${timestamp}`, { 
+          signal: controller.signal,
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+          }
+        });
         if (!res.ok || !res.headers.get("content-type")?.includes("application/json")) {
           setProducts([]);
           setTotalPages(1);

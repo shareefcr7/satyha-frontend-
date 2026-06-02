@@ -38,8 +38,24 @@ const SubcategoriesSection = () => {
       try {
         // Fetch subcategories and products in parallel with abort signal
         const [subRes, prodRes] = await Promise.all([
-          fetch(`${api}/subcategory`, { signal: controller.signal }),
-          fetch(`${api}/product?limit=200`, { signal: controller.signal }),
+          fetch(`${api}/subcategory?_t=${Date.now()}`, { 
+            signal: controller.signal,
+            cache: 'no-store',
+            headers: {
+              'Cache-Control': 'no-cache, no-store, must-revalidate',
+              'Pragma': 'no-cache',
+              'Expires': '0'
+            }
+          }),
+          fetch(`${api}/product?limit=200&_t=${Date.now()}`, { 
+            signal: controller.signal,
+            cache: 'no-store',
+            headers: {
+              'Cache-Control': 'no-cache, no-store, must-revalidate',
+              'Pragma': 'no-cache',
+              'Expires': '0'
+            }
+          }),
         ]);
 
         if (!subRes.ok || !prodRes.ok) {

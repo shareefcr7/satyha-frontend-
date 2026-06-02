@@ -23,22 +23,24 @@ const CategoriesSection = () => {
   useEffect(() => {
     if (!api) { setLoading(false); return; }
 
-    if ((window as any).__categoryCache) {
-      setCategories((window as any).__categoryCache);
-      setLoading(false);
-      return;
-    }
-
     const controller = new AbortController();
 
-    fetch(`${api}/category`, { signal: controller.signal })
+    // Always fetch fresh - no window cache
+    fetch(`${api}/category?_t=${Date.now()}`, { 
+      signal: controller.signal,
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }
+    })
       .then(r => {
         if (!r.ok) throw new Error(`API error: ${r.status}`);
         return r.json();
       })
       .then(data => {
         const cats: Category[] = Array.isArray(data.categories) ? data.categories : [];
-        (window as any).__categoryCache = cats;
         setCategories(cats);
       })
       .catch((err: any) => {
