@@ -32,11 +32,11 @@ export async function fetchAPI(
   } else {
     const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
     
-    // Use localhost during development, Vercel backend on production
+    // Use localhost during development, production backend on Vercel
     if (isLocalhost) {
       url = `http://localhost:5002/api/${cleanEndpoint}`;
     } else {
-      url = `http://localhost:5002/api/${cleanEndpoint}`;
+      url = `${API_URL}/${cleanEndpoint}`;
     }
   }
 
