@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { fetchAPIJson } from "@/lib/fetchAPI";
 
 type BannerSlide = {
   _id: string;
@@ -98,20 +99,8 @@ export default function HeroBanner() {
 
     const fetchBanners = async () => {
       try {
-        // Add timestamp for cache-busting + disable cache
-        const timestamp = Date.now();
-        const res = await fetch(`${api}/banner?_t=${timestamp}`, {
-          cache: 'no-store',
-          headers: {
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache',
-            'Expires': '0'
-          }
-        });
-        if (!res.ok || !res.headers.get("content-type")?.includes("application/json")) {
-          throw new Error("Invalid response");
-        }
-        const data = await res.json();
+        // Use fetchAPI wrapper to handle CORS
+        const data = await fetchAPIJson<{ banners: BannerSlide[] }>('/banner');
 
         if (data.banners && Array.isArray(data.banners)) {
           const activeBanners = data.banners.filter((b: BannerSlide) => b.isActive);

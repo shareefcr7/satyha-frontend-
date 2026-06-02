@@ -6,6 +6,7 @@ import Link from "next/link";
 import * as motion from "framer-motion/client";
 import { cn } from "@/lib/utils";
 import { integralCF } from "@/styles/fonts";
+import { fetchAPIJson } from "@/lib/fetchAPI";
 import {
   Carousel,
   CarouselContent,
@@ -73,51 +74,32 @@ export default function CategoryCarousel() {
   useEffect(() => {
     if (!api) { setLoading(false); return; }
 
-    // Add timestamp for cache-busting + disable cache
-    const timestamp = Date.now();
-    fetch(`${api}/category/list?_t=${timestamp}`, {
-      cache: 'no-store',
-      headers: {
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0'
+    const loadCategories = async () => {
+      try {
+        // Use fetchAPI wrapper to handle CORS
+        const data = await fetchAPIJson<{ categories: Category[] }>('/category/list');
+        console.log("CATEGORY API:", data);
+
+        // API returns { categories: [...] }
+        const list = Array.isArray(data)
+          ? data
+          : Array.isArray(data.categories)
+          ? data.categories
+          : [];
+
+        // Only show active categories
+        const active = list.filter((c: Category) => c.isActive !== false);
+        setCategories(active);
+
+      } catch (err) {
+        console.error("Failed to fetch categories:", err);
+      } finally {
+        setLoading(false);
       }
-    })
-  .then(res => {
-    if (
-      !res.ok ||
-      !res.headers.get("content-type")?.includes("application/json")
-    ) {
-      throw new Error("Invalid response from server");
-    }
+    };
 
-    return res.json();
-  })
-
-  .then(data => {
-
-    console.log("CATEGORY API:", data);
-
-    // API returns { categories: [...] }
-    const list = Array.isArray(data)
-      ? data
-      : Array.isArray(data.categories)
-      ? data.categories
-      : [];
-
-    // Only show active categories
-    const active = list.filter((c: Category) => c.isActive !== false);
-    setCategories(active);
-
-  })
-
-  .catch(err => {
-    console.error("Failed to fetch categories:", err);
-  })
-
-  .finally(() => setLoading(false));
-
-}, [api]);
+    loadCategories();
+  }, [api]);
 
   if (!loading && categories.length === 0) return null;
 
