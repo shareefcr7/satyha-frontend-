@@ -21,27 +21,25 @@ const FALLBACK_IMAGES: Record<string, string> = {
   // REMOVED ALL FALLBACK IMAGES - Only show real data from admin
 };
 
-const getDisplayImage = (cat: Category) => {
-  const api = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5002/api';
-  const apiBase = api.replace(/\/api\/?$/, '');
-
-  const raw = cat.image || '';
-  const resolve = (r: string) => {
-    if (!r) return '';
-    if (r.startsWith('data:')) return r;
-    if (r.startsWith('//')) return `https:${r}`;
-    if (r.startsWith('http://')) return r.replace('http://', 'https://');
-    if (r.startsWith('https://')) return r;
-    if (r.startsWith('/')) return `${apiBase}${r}`;
-    if (r.includes('.') && !r.includes(' ')) return `https://${r}`;
-    return r;
-  };
-
-  const resolved = resolve(raw);
-  // Only return if it's a valid URL - NO fallbacks
-  if (resolved && resolved.startsWith('http')) return resolved;
+const getDisplayImage = (cat: Category, api: string | undefined) => {
+  if (!cat.image) return '';
   
-  // Return empty string instead of fallback - let admin set proper images
+  const apiBase = api?.replace(/\/api\/?$/, '') || 'http://localhost:5002';
+  const raw = cat.image || '';
+  
+  // Already a full URL (http or https)
+  if (raw.startsWith('http://') || raw.startsWith('https://')) return raw;
+  
+  // Base64 image
+  if (raw.startsWith('data:')) return raw;
+  
+  // Protocol-relative URL
+  if (raw.startsWith('//')) return `https:${raw}`;
+  
+  // Local path - prepend API base URL
+  if (raw.startsWith('/')) return `${apiBase}${raw}`;
+  
+  // For any other case, don't make assumptions - return empty
   return '';
 };
 
@@ -120,7 +118,7 @@ export default function CategoryCarousel() {
                   >
                     <div className="relative w-[150px] h-[200px] sm:w-[220px] sm:h-[300px] rounded-2xl overflow-hidden bg-white border border-gray-100 shadow-sm group-hover:shadow-2xl group-hover:shadow-brand/20 transition-all duration-500 shrink-0">
                       <Image
-                        src={getDisplayImage(cat)}
+                        src={getDisplayImage(cat, api)}
                         alt={cat.name}
                         fill
                         className="object-cover scale-100 group-hover:scale-110 transition-all duration-700 ease-out"

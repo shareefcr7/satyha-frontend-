@@ -19,12 +19,9 @@ export async function fetchAPI(
   // Detect if running locally - MUST be done at runtime in browser, not at module load
   const isLocalhost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
 
-  // AGGRESSIVE CACHE BUSTING HEADERS
+  // Ensure proper headers (remove cache-control to avoid CORS issues)
   const headers = {
     'Content-Type': 'application/json',
-    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-    'Pragma': 'no-cache',
-    'Expires': '0',
     ...fetchOptions.headers,
   };
 
@@ -39,7 +36,7 @@ export async function fetchAPI(
     if (isLocalhost) {
       url = `http://localhost:5002/api/${cleanEndpoint}`;
     } else {
-      url = `${API_URL}/${cleanEndpoint}`;
+      url = `http://localhost:5002/api/${cleanEndpoint}`;
     }
   }
 

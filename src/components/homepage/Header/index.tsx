@@ -32,6 +32,28 @@ export default function HeroBanner() {
   const [slides, setSlides] = useState<BannerSlide[]>([]);
   const api = process.env.NEXT_PUBLIC_API_URL
 
+  // Helper to resolve image URLs
+  const resolveImageUrl = useCallback((imageUrl: string): string => {
+    if (!imageUrl) return '';
+    
+    // Already a full URL
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) return imageUrl;
+    
+    // Base64 image
+    if (imageUrl.startsWith('data:')) return imageUrl;
+    
+    // Protocol-relative URL
+    if (imageUrl.startsWith('//')) return `https:${imageUrl}`;
+    
+    // Local path - prepend API base URL
+    if (imageUrl.startsWith('/')) {
+      const apiBase = api?.replace(/\/api\/?$/, '') || 'http://localhost:5002';
+      return `${apiBase}${imageUrl}`;
+    }
+    
+    return imageUrl;
+  }, [api]);
+
   const goTo = useCallback(
     (index: number, dir: "next" | "prev" = "next") => {
       if (animating || index === current) return;
@@ -75,7 +97,14 @@ export default function HeroBanner() {
           console.log("HeroBanner: Active banners:", activeBanners);
           
           if (activeBanners.length > 0) {
-            setSlides(activeBanners);
+            // Resolve image URLs to full paths
+            const resolvedBanners = activeBanners.map(b => ({
+              ...b,
+              desktopImage: resolveImageUrl(b.desktopImage),
+              mobileImage: resolveImageUrl(b.mobileImage)
+            }));
+            console.log("HeroBanner: Resolved banners with image URLs:", resolvedBanners);
+            setSlides(resolvedBanners);
             return;
           }
         }
@@ -89,7 +118,7 @@ export default function HeroBanner() {
     };
 
     fetchBanners();
-  }, [api]);
+  }, [api, resolveImageUrl]);
 
   const next = useCallback(() => {
     if (slides.length > 0) {
