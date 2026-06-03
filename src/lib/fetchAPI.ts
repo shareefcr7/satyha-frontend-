@@ -4,16 +4,15 @@
  */
 
 const getApiUrl = () => {
-  if (typeof window === 'undefined') return process.env.NEXT_PUBLIC_API_URL;
-  
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-  
-  // On localhost, use localhost backend
-  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    return 'http://localhost:5002/api';
+  // Always check hostname at runtime
+  if (typeof window !== 'undefined') {
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      return 'http://localhost:5002/api';
+    }
   }
   
-  return apiUrl;
+  // On server-side or production, use env var
+  return process.env.NEXT_PUBLIC_API_URL || 'https://clear-glass-backend.vercel.app/api';
 };
 
 interface FetchOptions extends RequestInit {
@@ -46,6 +45,8 @@ export async function fetchAPI(
   const random = Math.random().toString(36).substr(2, 9);
   const separator = url.includes('?') ? '&' : '?';
   const urlWithTimestamp = `${url}${separator}_t=${timestamp}&_r=${random}`;
+
+  console.log('Fetching from:', urlWithTimestamp);
 
   const finalOptions: RequestInit = {
     ...fetchOptions,
