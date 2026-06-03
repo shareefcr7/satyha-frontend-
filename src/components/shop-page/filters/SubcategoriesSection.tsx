@@ -43,8 +43,7 @@ const SubcategoriesSection = () => {
             cache: 'no-store',
             headers: {
               'Cache-Control': 'no-cache, no-store, must-revalidate',
-              'Pragma': 'no-cache',
-              'Expires': '0'
+              'Pragma': 'no-cache'
             }
           }),
           fetch(`${api}/product?limit=200&_t=${Date.now()}`, { 
@@ -52,8 +51,7 @@ const SubcategoriesSection = () => {
             cache: 'no-store',
             headers: {
               'Cache-Control': 'no-cache, no-store, must-revalidate',
-              'Pragma': 'no-cache',
-              'Expires': '0'
+              'Pragma': 'no-cache'
             }
           }),
         ]);

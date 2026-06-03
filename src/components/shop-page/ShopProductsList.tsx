@@ -132,8 +132,7 @@ const ShopProductsList = () => {
           cache: 'no-store',
           headers: {
             'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache',
-            'Expires': '0'
+            'Pragma': 'no-cache'
           }
         });
         if (!res.ok || !res.headers.get("content-type")?.includes("application/json")) {
