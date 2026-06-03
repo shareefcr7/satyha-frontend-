@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import ProductCard from "@/components/common/ProductCard";
 import { Product } from "@/types/product.types";
+import { fetchAPIJson } from "@/lib/fetchAPI";
 import {
   Pagination,
   PaginationContent,
@@ -55,7 +56,6 @@ const ShopProductsList = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const searchParams = useSearchParams();
-  const api = process.env.NEXT_PUBLIC_API_URL;
   const prevParamsRef = useRef<string | null>(null);
   const allProductsCache = useRef<Product[]>([]);
   const cacheLoadedRef = useRef(false);
@@ -70,8 +70,6 @@ const ShopProductsList = () => {
   }, [searchParams]);
 
   useEffect(() => {
-    if (!api) { setLoading(false); return; }
-
     const controller = new AbortController();
 
     const applyFilters = (all: Product[]) => {
@@ -124,18 +122,11 @@ const ShopProductsList = () => {
     const fetchAllProducts = async () => {
       setLoading(true);
       try {
-        // Fetch up to 500 products to ensure all admin-added products are shown
-        const res = await fetch(`${api}/product?skip=0&limit=500`, { 
-          signal: controller.signal,
-          cache: 'no-store'
-        });
-        if (!res.ok || !res.headers.get("content-type")?.includes("application/json")) {
-          setProducts([]);
-          setTotalPages(1);
-          setLoading(false);
-          return;
-        }
-        const data = await res.json();
+        // Use fetchAPIJson wrapper instead of raw fetch
+        const data = await fetchAPIJson<{ products: ApiProduct[] }>(
+          'product?skip=0&limit=500',
+          { signal: controller.signal }
+        );
 
         if (data.products && Array.isArray(data.products)) {
           // ONLY use new product structure - no fallback to old variants or defaults
@@ -189,7 +180,7 @@ const ShopProductsList = () => {
 
     fetchAllProducts();
     return () => controller.abort();
-  }, [searchParams, currentPage, api]);
+  }, [searchParams, currentPage]);
 
   const search = searchParams.get("search");
   const categories = searchParams.get("categories");
