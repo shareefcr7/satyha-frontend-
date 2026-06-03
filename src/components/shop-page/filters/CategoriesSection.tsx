@@ -16,41 +16,60 @@ type Category = { _id: string; name: string; slug: string };
 const CategoriesSection = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const dispatch = useDispatch();
   const selectedCategories = useSelector((state: RootState) => state.filters.categories);
   const api = process.env.NEXT_PUBLIC_API_URL;
 
   useEffect(() => {
-    if (!api) { setLoading(false); return; }
+    if (!api) {
+      setLoading(false);
+      return;
+    }
 
+    let isMounted = true;
     const controller = new AbortController();
 
-    // Always fetch fresh - no window cache
-    fetch(`${api}/category?_t=${Date.now()}`, { 
-      signal: controller.signal,
-      cache: 'no-store',
-      headers: {
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache'
-      }
-    })
-      .then(r => {
-        if (!r.ok) throw new Error(`API error: ${r.status}`);
-        return r.json();
-      })
-      .then(data => {
-        const cats: Category[] = Array.isArray(data.categories) ? data.categories : [];
-        setCategories(cats);
-      })
-      .catch((err: any) => {
-        if (err.name !== 'AbortError') {
-          console.error('Failed to fetch categories:', err.message);
-          setCategories([]);
-        }
-      })
-      .finally(() => setLoading(false));
+    const fetchCategories = async () => {
+      try {
+        setError(null);
+        const response = await fetch(`${api}/category`, {
+          signal: controller.signal,
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache'
+          }
+        });
 
-    return () => controller.abort();
+        if (!response.ok) {
+          throw new Error(`API returned ${response.status}`);
+        }
+
+        const data = await response.json();
+        
+        if (isMounted) {
+          const cats = Array.isArray(data.categories) ? data.categories : [];
+          setCategories(cats);
+          setError(null);
+        }
+      } catch (err: any) {
+        if (isMounted && err.name !== 'AbortError') {
+          console.error('Failed to fetch categories:', err);
+          setCategories([]);
+          setError('Could not load categories');
+        }
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    fetchCategories();
+
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
   }, [api]);
 
   return (
@@ -66,6 +85,8 @@ const CategoriesSection = () => {
                 <div key={i} className="h-4 bg-brand/10 rounded w-full" />
               ))}
             </div>
+          ) : error ? (
+            <div className="text-sm text-red-500">{error}</div>
           ) : categories.length > 0 ? (
             <div className="flex flex-col space-y-2">
               {categories.map((cat) => (
@@ -81,7 +102,7 @@ const CategoriesSection = () => {
               ))}
             </div>
           ) : (
-            <div className="text-sm text-brand/60">No categories found</div>
+            <div className="text-sm text-brand/60">No categories available</div>
           )}
         </AccordionContent>
       </AccordionItem>

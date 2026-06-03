@@ -20,9 +20,9 @@ type ApiProduct = {
 
 const SubcategoriesSection = () => {
   const [allSubs, setAllSubs] = useState<Subcategory[]>([]);
-  // map: categoryName (lowercase) → Set of subcategory names
   const [catSubMap, setCatSubMap] = useState<Map<string, Set<string>>>(new Map());
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const dispatch = useDispatch();
   const selectedSubs = useSelector((state: RootState) => state.filters.subcategories);
@@ -30,15 +30,19 @@ const SubcategoriesSection = () => {
   const api = process.env.NEXT_PUBLIC_API_URL;
 
   useEffect(() => {
-    if (!api) { setLoading(false); return; }
+    if (!api) {
+      setLoading(false);
+      return;
+    }
 
+    let isMounted = true;
     const controller = new AbortController();
 
     const loadData = async () => {
       try {
-        // Fetch subcategories and products in parallel with abort signal
+        setError(null);
         const [subRes, prodRes] = await Promise.all([
-          fetch(`${api}/subcategory?_t=${Date.now()}`, { 
+          fetch(`${api}/subcategory`, {
             signal: controller.signal,
             cache: 'no-store',
             headers: {
@@ -46,7 +50,7 @@ const SubcategoriesSection = () => {
               'Pragma': 'no-cache'
             }
           }),
-          fetch(`${api}/product?limit=200&_t=${Date.now()}`, { 
+          fetch(`${api}/product?limit=500`, {
             signal: controller.signal,
             cache: 'no-store',
             headers: {
@@ -57,43 +61,45 @@ const SubcategoriesSection = () => {
         ]);
 
         if (!subRes.ok || !prodRes.ok) {
-          throw new Error('API error');
+          throw new Error(`API error: ${subRes.status || prodRes.status}`);
         }
 
         const subData = await subRes.json();
         const prodData = await prodRes.json();
 
-        const subs: Subcategory[] = Array.isArray(subData.subcategories)
-          ? subData.subcategories
-          : [];
-        setAllSubs(subs);
+        if (isMounted) {
+          const subs = Array.isArray(subData.subcategories) ? subData.subcategories : [];
+          setAllSubs(subs);
 
-        // Build category → subcategory names map from products
-        const map = new Map<string, Set<string>>();
-        const products: ApiProduct[] = Array.isArray(prodData.products)
-          ? prodData.products
-          : [];
+          const map = new Map<string, Set<string>>();
+          const products = Array.isArray(prodData.products) ? prodData.products : [];
 
-        for (const p of products) {
-          if (!p.category?.name || !p.subcategory?.name) continue;
-          const catKey = p.category.name.toLowerCase();
-          if (!map.has(catKey)) map.set(catKey, new Set());
-          map.get(catKey)!.add(p.subcategory.name);
+          for (const p of products) {
+            if (!p.category?.name || !p.subcategory?.name) continue;
+            const catKey = p.category.name.toLowerCase();
+            if (!map.has(catKey)) map.set(catKey, new Set());
+            map.get(catKey)!.add(p.subcategory.name);
+          }
+          setCatSubMap(map);
+          setError(null);
         }
-        setCatSubMap(map);
       } catch (e: any) {
-        if (e.name !== 'AbortError') {
-          console.error('Failed to fetch subcategories:', e.message);
+        if (isMounted && e.name !== 'AbortError') {
+          console.error('Failed to fetch subcategories:', e);
           setAllSubs([]);
           setCatSubMap(new Map());
+          setError('Could not load brands');
         }
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
 
     loadData();
-    return () => controller.abort();
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
   }, [api]);
 
   // Derive visible subcategories based on selected categories
@@ -110,7 +116,6 @@ const SubcategoriesSection = () => {
   }, [selectedCategories, allSubs, catSubMap]);
 
   if (!loading && allSubs.length === 0) return null;
-  // Hide section entirely when a category is selected but has no matching subcategories
   if (!loading && selectedCategories.length > 0 && visibleSubs.length === 0) return null;
 
   return (
@@ -126,6 +131,8 @@ const SubcategoriesSection = () => {
                 <div key={i} className="h-4 bg-brand/10 rounded w-full" />
               ))}
             </div>
+          ) : error ? (
+            <div className="text-sm text-red-500">{error}</div>
           ) : (
             <div className="flex flex-col space-y-2">
               {visibleSubs.map((sub) => (
