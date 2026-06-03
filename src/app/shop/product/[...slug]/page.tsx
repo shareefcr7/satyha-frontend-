@@ -6,9 +6,8 @@ import { notFound } from "next/navigation";
 export const dynamic = "force-dynamic";
 export const revalidate = 60;
 
-const api = process.env.NEXT_PUBLIC_API_URL;
-
 async function getProduct(id: string): Promise<Product | null> {
+  const api = process.env.NEXT_PUBLIC_API_URL;
   if (!api) return null;
   try {
     const res = await fetch(`${api}/product/${id}`, {
