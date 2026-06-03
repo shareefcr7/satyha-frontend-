@@ -121,7 +121,7 @@ export default function CategoryCarousel() {
                         src={getDisplayImage(cat, api)}
                         alt={cat.name}
                         fill
-                        className="object-cover scale-100 group-hover:scale-110 transition-all duration-700 ease-out"
+                        className="object-contain scale-100 group-hover:scale-110 transition-all duration-700 ease-out"
                         unoptimized
                       />
                       {/* Premium Overlay */}

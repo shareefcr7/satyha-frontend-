@@ -3,22 +3,18 @@ import { Discount } from "@/types/product.types";
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 
+// Calculate final price per item (selling price, no additional discounts)
 const calcAdjustedTotalPrice = (
   totalPrice: number,
   data: CartItem,
   quantity?: number
 ): number => {
-  const discount = data.discount || { percentage: 0, amount: 0 };
+  // Using selling price directly from cart item
+  // Cart item already contains selling price, no further discount calculation needed
   const basePrice = data.price || 0;
   const qty = quantity ? quantity : data.quantity;
-
-  return (
-    (discount.percentage > 0
-      ? Math.round(basePrice - (basePrice * discount.percentage) / 100)
-      : discount.amount > 0
-      ? Math.round(basePrice - discount.amount)
-      : basePrice) * qty
-  );
+  
+  return Math.round(basePrice * qty);
 };
 
 export type RemoveCartItem = {

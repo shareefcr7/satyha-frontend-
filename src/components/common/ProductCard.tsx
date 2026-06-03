@@ -37,7 +37,7 @@ const ProductCard = ({ data, priority = false, isCircle = false }: ProductCardPr
           src={data.mainImage || data.srcUrl || ""}
           fill
           sizes="(max-width: 768px) 50vw, 320px"
-          className="object-cover hover:scale-110 transition-all duration-700 ease-out"
+          className="object-contain hover:scale-110 transition-all duration-700 ease-out"
           alt={title}
           priority={priority}
         />

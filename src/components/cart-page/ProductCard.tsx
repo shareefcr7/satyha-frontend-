@@ -31,7 +31,7 @@ const ProductCard = ({ data }: ProductCardProps) => {
           src={data.srcUrl}
           fill
           sizes="124px"
-          className="rounded-md object-cover hover:scale-110 transition-all duration-500"
+          className="rounded-md object-contain hover:scale-110 transition-all duration-500"
           alt={data.name}
           priority
         />
@@ -70,32 +70,10 @@ const ProductCard = ({ data }: ProductCardProps) => {
 
         <div className="flex items-center flex-wrap justify-between">
           <div className="flex items-center space-x-[5px] xl:space-x-2.5">
-            {data.discount.percentage > 0 ? (
-              <span className="font-bold text-brand text-xl xl:text-2xl">
-                {`₹${Math.round(
-                  data.price - (data.price * data.discount.percentage) / 100
-                )}`}
-              </span>
-            ) : data.discount.amount > 0 ? (
-              <span className="font-bold text-brand text-xl xl:text-2xl">
-                {`₹${data.price - data.discount.amount}`}
-              </span>
-            ) : (
-              <span className="font-bold text-brand text-xl xl:text-2xl">
-                ₹{data.price}
-              </span>
-            )}
-            {data.discount.percentage > 0 ? (
-              <span className="font-medium text-[10px] xl:text-xs py-1.5 px-3.5 rounded-full bg-[#FF3333]/10 text-[#FF3333]">
-                {`-${data.discount.percentage}%`}
-              </span>
-            ) : (
-              data.discount.amount > 0 && (
-                <span className="font-medium text-[10px] xl:text-xs py-1.5 px-3.5 rounded-full bg-[#FF3333]/10 text-[#FF3333]">
-                  {`-₹${data.discount.amount}`}
-                </span>
-              )
-            )}
+            {/* Always display the selling price (already discounted) */}
+            <span className="font-bold text-brand text-xl xl:text-2xl">
+              ₹{Math.round(data.price)}
+            </span>
           </div>
           <CartCounter
             initialValue={data.quantity}

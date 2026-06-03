@@ -29,7 +29,7 @@ const PhotoSection = ({ data }: { data: Product }) => {
                 src={photo}
                 fill
                 sizes="152px"
-                className="rounded-md object-cover hover:scale-110 transition-all duration-500"
+                className="rounded-md object-contain hover:scale-110 transition-all duration-500"
                 alt={data.title || data.name || "Product"}
                 priority
                 unoptimized
@@ -44,7 +44,7 @@ const PhotoSection = ({ data }: { data: Product }) => {
           src={selected}
           fill
           sizes="(max-width: 768px) 100vw, 444px"
-          className="rounded-md object-cover hover:scale-110 transition-all duration-500"
+          className="rounded-md object-contain hover:scale-110 transition-all duration-500"
           alt={data.title || data.name || "Product"}
           priority
           unoptimized
