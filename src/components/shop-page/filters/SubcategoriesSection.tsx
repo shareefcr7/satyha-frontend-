@@ -70,6 +70,7 @@ const SubcategoriesSection = () => {
           setCatSubMap(new Map());
           setError('Could not load brands');
         }
+        // Silently ignore AbortError - it's expected on cleanup
       } finally {
         if (isMounted) setLoading(false);
       }

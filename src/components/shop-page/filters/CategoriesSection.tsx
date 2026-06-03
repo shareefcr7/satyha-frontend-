@@ -45,6 +45,7 @@ const CategoriesSection = () => {
           setCategories([]);
           setError('Could not load categories');
         }
+        // Silently ignore AbortError - it's expected on cleanup
       } finally {
         if (isMounted) setLoading(false);
       }
