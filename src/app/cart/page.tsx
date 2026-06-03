@@ -7,20 +7,27 @@ import { cn } from "@/lib/utils";
 import { integralCF } from "@/styles/fonts";
 import { FaArrowRight } from "react-icons/fa6";
 import { TbBasketExclamation } from "react-icons/tb";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { RootState } from "@/lib/store";
-import { useAppSelector } from "@/lib/hooks/redux";
+import { useAppSelector, useAppDispatch } from "@/lib/hooks/redux";
 import Link from "next/link";
 import AddressModal from "@/components/cart-page/AddressModal";
+import { recalculateTotals } from "@/lib/features/carts/cartsSlice";
 
 // WhatsApp configuration
 const WHATSAPP_PHONE = process.env.NEXT_PUBLIC_WHATSAPP_PHONE || "919074136802";
 const WHATSAPP_MESSAGE = "Hi Clear Glass! I'd like to place an order.";
 
 export default function CartPage() {
+  const dispatch = useAppDispatch();
   const { cart, totalPrice, adjustedTotalPrice } = useAppSelector(
     (state: RootState) => state.carts
   );
+
+  // Recalculate totals on mount to fix any stale values
+  useEffect(() => {
+    dispatch(recalculateTotals());
+  }, [dispatch]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [address, setAddress] = useState({
