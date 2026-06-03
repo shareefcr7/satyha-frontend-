@@ -10,6 +10,7 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { toggleCategory } from "@/lib/features/filters/filtersSlice";
 import type { RootState } from "@/lib/store";
+import { fetchAPIJson } from "@/lib/fetchAPI";
 
 type Category = { _id: string; name: string; slug: string };
 
@@ -19,30 +20,19 @@ const CategoriesSection = () => {
   const [error, setError] = useState<string | null>(null);
   const dispatch = useDispatch();
   const selectedCategories = useSelector((state: RootState) => state.filters.categories);
-  const api = process.env.NEXT_PUBLIC_API_URL;
 
   useEffect(() => {
-    if (!api) {
-      setLoading(false);
-      return;
-    }
-
     let isMounted = true;
     const controller = new AbortController();
 
     const fetchCategories = async () => {
       try {
         setError(null);
-        const response = await fetch(`${api}/category`, {
-          signal: controller.signal,
-          cache: 'no-store'
+        setLoading(true);
+
+        const data = await fetchAPIJson<{ categories: Category[] }>('category', {
+          signal: controller.signal
         });
-
-        if (!response.ok) {
-          throw new Error(`API returned ${response.status}`);
-        }
-
-        const data = await response.json();
         
         if (isMounted) {
           const cats = Array.isArray(data.categories) ? data.categories : [];
@@ -66,7 +56,7 @@ const CategoriesSection = () => {
       isMounted = false;
       controller.abort();
     };
-  }, [api]);
+  }, []);
 
   return (
     <Accordion type="single" collapsible defaultValue="filter-category">

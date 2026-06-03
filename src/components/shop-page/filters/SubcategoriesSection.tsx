@@ -10,6 +10,7 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { toggleSubcategory } from "@/lib/features/filters/filtersSlice";
 import type { RootState } from "@/lib/store";
+import { fetchAPIJson } from "@/lib/fetchAPI";
 
 type Subcategory = { _id: string; name: string };
 
@@ -27,37 +28,24 @@ const SubcategoriesSection = () => {
   const dispatch = useDispatch();
   const selectedSubs = useSelector((state: RootState) => state.filters.subcategories);
   const selectedCategories = useSelector((state: RootState) => state.filters.categories);
-  const api = process.env.NEXT_PUBLIC_API_URL;
 
   useEffect(() => {
-    if (!api) {
-      setLoading(false);
-      return;
-    }
-
     let isMounted = true;
     const controller = new AbortController();
 
     const loadData = async () => {
       try {
         setError(null);
-        const [subRes, prodRes] = await Promise.all([
-          fetch(`${api}/subcategory`, {
-            signal: controller.signal,
-            cache: 'no-store'
+        setLoading(true);
+
+        const [subData, prodData] = await Promise.all([
+          fetchAPIJson<{ subcategories: Subcategory[] }>('subcategory', {
+            signal: controller.signal
           }),
-          fetch(`${api}/product?limit=500`, {
-            signal: controller.signal,
-            cache: 'no-store'
+          fetchAPIJson<{ products: ApiProduct[] }>('product?limit=500', {
+            signal: controller.signal
           }),
         ]);
-
-        if (!subRes.ok || !prodRes.ok) {
-          throw new Error(`API error: ${subRes.status || prodRes.status}`);
-        }
-
-        const subData = await subRes.json();
-        const prodData = await prodRes.json();
 
         if (isMounted) {
           const subs = Array.isArray(subData.subcategories) ? subData.subcategories : [];
@@ -92,7 +80,7 @@ const SubcategoriesSection = () => {
       isMounted = false;
       controller.abort();
     };
-  }, [api]);
+  }, []);
 
   // Derive visible subcategories based on selected categories
   const visibleSubs = useMemo(() => {
