@@ -619,6 +619,9 @@ export default function HeroBanner() {
           else if (i === prev) cls = "slide-img exiting";
           const imageSrc = isMobile && s.mobileImage ? s.mobileImage : s.desktopImage;
           
+          // Don't render image if src is empty
+          if (!imageSrc) return null;
+          
           return (
             <img
               key={s._id}
