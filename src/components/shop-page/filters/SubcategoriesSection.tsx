@@ -44,19 +44,11 @@ const SubcategoriesSection = () => {
         const [subRes, prodRes] = await Promise.all([
           fetch(`${api}/subcategory`, {
             signal: controller.signal,
-            cache: 'no-store',
-            headers: {
-              'Cache-Control': 'no-cache, no-store, must-revalidate',
-              'Pragma': 'no-cache'
-            }
+            cache: 'no-store'
           }),
           fetch(`${api}/product?limit=500`, {
             signal: controller.signal,
-            cache: 'no-store',
-            headers: {
-              'Cache-Control': 'no-cache, no-store, must-revalidate',
-              'Pragma': 'no-cache'
-            }
+            cache: 'no-store'
           }),
         ]);
 

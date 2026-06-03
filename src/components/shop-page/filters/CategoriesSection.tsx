@@ -35,11 +35,7 @@ const CategoriesSection = () => {
         setError(null);
         const response = await fetch(`${api}/category`, {
           signal: controller.signal,
-          cache: 'no-store',
-          headers: {
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache'
-          }
+          cache: 'no-store'
         });
 
         if (!response.ok) {
