@@ -110,7 +110,7 @@ export default function CategoryCarousel() {
         ) : (
           <Carousel opts={{ align: "start" }} className="w-full mb-6 md:mb-9">
             <CarouselContent className="mx-4 xl:mx-0 space-x-6 lg:space-x-8">
-              {categories.map(cat => (
+              {categories.filter(cat => cat.image && getDisplayImage(cat, api)).map(cat => (
                 <CarouselItem key={cat._id} className="pl-0 basis-auto">
                   <Link
                     href={`/shop?categories=${encodeURIComponent(cat.name)}`}
